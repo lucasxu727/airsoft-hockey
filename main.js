@@ -130,7 +130,7 @@ class Enemy {
     }
   }
 
-  
+
 
   shoot(xvel, yvel) {
     bullets.push(new Bullet(this.x, this.y, 10, "red", yvel, xvel));
@@ -227,10 +227,14 @@ let particles = [];
 
 //1 is left side, -1 is right
 function score(side) {
+  let x = ball.x;
+  let y = ball.y;
   ball = 0;
-  let angle = side * (Math.random() * (Math.PI))
   for(let i = 0; i < Math.random() * (30 - 10) + 10; i++) {
-
+    let angle = side * (Math.random() * (Math.PI))
+    let xvelocity = 30 * Math.cos(angle);
+    let yvelocity = 30 * Math.sin(angle);
+    particles.push(new Particle(x, y, 10, "white", yvelocity,xvelocity))
   }
   setTimeout(() => {
   ball = new Ball(cwidth / 2, cheight / 2, 30, "white", 0, 0, 2);
