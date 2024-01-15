@@ -67,7 +67,7 @@ class Enemy {
   predict() {
     //AI GOES HERE
     //Ball path prediction
-    if (ball.xvelocity > 0) { 
+    if (ball.xvelocity > 0) {
       let predx = ball.x;
       let predy = ball.y;
       //predict x position
@@ -95,42 +95,45 @@ class Enemy {
       //check if dy travelled bounces at all
       let bounces = 0;
       let remainderdy = 0;
-      if(dy > initdist) {
+      if (dy > initdist) {
         bounces++;
-        remainderdy = (dy - initdist) % (cheight - (2 * ball.radius));
-        bounces += Math.floor((dy - initdist) / (cheight - (2 * ball.radius)));
+        remainderdy = (dy - initdist) % (cheight - 2 * ball.radius);
+        bounces += Math.floor((dy - initdist) / (cheight - 2 * ball.radius));
         if (bounces % 2 == 0) {
-        direction *= -1;
-      }
-      if (direction > 0) {
-        predy = cheight - remainderdy - ball.radius;
-      } else {
-        predy = remainderdy;
-      }
+          direction *= -1;
+        }
+        if (direction > 0) {
+          predy = cheight - remainderdy - ball.radius;
+        } else {
+          predy = remainderdy;
+        }
       } else {
         //check direction
-        if(direction < 0) {
-          predy = ball.y - dy; 
+        if (direction < 0) {
+          predy = ball.y - dy;
         } else {
           predy = ball.y + dy;
         }
-      } 
+      }
       let dxpred = predx - enemy.x;
       let dypred = predy - enemy.y;
       let bulletangle = Math.atan2(dypred, dxpred);
-      let ballvelocity = Math.sqrt((ball.xvelocity*ball.xvelocity) + (ball.yvelocity*ball.yvelocity))
+      let ballvelocity = Math.sqrt(
+        ball.xvelocity * ball.xvelocity + ball.yvelocity * ball.yvelocity
+      );
       let yvelocity = ballvelocity * Math.sin(bulletangle);
       let xvelocity = ballvelocity * Math.cos(bulletangle);
 
       let bullettime = dypred / (yvelocity * 60);
-      let finaltime = Math.sqrt((btime - bullettime) * (btime - bullettime)) * 1000;
+      let finaltime =
+        Math.sqrt((btime - bullettime) * (btime - bullettime)) * 1000;
       setTimeout(() => {
-        bullets.push(new Bullet(enemy.x, enemy.y, 10, "red", yvelocity, xvelocity))
+        bullets.push(
+          new Bullet(enemy.x, enemy.y, 10, "red", yvelocity, xvelocity)
+        );
       }, finaltime);
     }
   }
-
-
 
   shoot(xvel, yvel) {
     bullets.push(new Bullet(this.x, this.y, 10, "red", yvel, xvel));
@@ -182,8 +185,24 @@ class Ball {
     this.x += this.xvelocity;
     this.y += this.yvelocity;
     //change these to score function
-    if (this.x - this.radius > cwidth) score(-1);
-    if (this.x + this.radius < 0) score(1);
+    if (this.x - this.radius > cwidth) {
+      score(-1);
+      playerScore++;
+      if (playerScore > 4) {
+        setTimeout(() => {
+          alert("You Win!");
+        }, 1000);
+      }
+    }
+    if (this.x + this.radius < 0) {
+      score(1);
+      enemyScore++;
+      if (enemyScore > 4) {
+        setTimeout(() => {
+          alert("Red Wins!");
+        }, 1000);
+      }
+    }
     //bounce
     if (this.y - this.radius < 0 || this.y + this.radius > cheight)
       this.yvelocity *= -1;
@@ -203,7 +222,7 @@ class Particle {
     this.alpha = 1;
   }
   draw() {
-    ctx.save()
+    ctx.save();
     ctx.globalAlpha = this.alpha;
     ctx.beginPath();
     ctx.fillStyle = this.colour;
@@ -224,20 +243,22 @@ let enemy = new Enemy((7 * cwidth) / 8, cheight / 2, 30, "red", 0, 0);
 let ball = new Ball(cwidth / 2, cheight / 2, 30, "white", 0, 0, 2);
 let bullets = [];
 let particles = [];
+let playerScore = 0;
+let enemyScore = 0;
 
 //1 is left side, -1 is right
 function score(side) {
   let x = ball.x;
   let y = ball.y;
   ball = 0;
-  for(let i = 0; i < Math.random() * (30 - 10) + 10; i++) {
-    let angle = side * (Math.random() * (Math.PI))
+  for (let i = 0; i < Math.random() * (30 - 10) + 10; i++) {
+    let angle = side * (Math.random() * Math.PI) - Math.PI / 2;
     let xvelocity = 30 * Math.cos(angle);
     let yvelocity = 30 * Math.sin(angle);
-    particles.push(new Particle(x, y, 10, "white", yvelocity,xvelocity))
+    particles.push(new Particle(x, y, 10, "white", yvelocity, xvelocity));
   }
   setTimeout(() => {
-  ball = new Ball(cwidth / 2, cheight / 2, 30, "white", 0, 0, 2);
+    ball = new Ball(cwidth / 2, cheight / 2, 30, "white", 0, 0, 2);
   }, 3000);
 }
 
@@ -258,6 +279,12 @@ function animate() {
   ctx.strokeStyle = "white";
   ctx.lineWidth = 10;
   ctx.stroke();
+  ctx.font = "50px roboto";
+  ctx.fillStyle = "White";
+  ctx.fillText(`${playerScore}`, cwidth / 4, cheight / 10);
+  ctx.font = "50px roboto";
+  ctx.fillStyle = "White";
+  ctx.fillText(`${enemyScore}`, (cwidth / 4) * 3, cheight / 10);
   bullets.forEach((bullet, index) => {
     bullet.update();
     if (
@@ -277,17 +304,17 @@ function animate() {
     if (dist - bullet.radius - ball.radius < 0) {
       ball.xvelocity = bullet.xvelocity;
       ball.yvelocity = bullet.yvelocity;
-      enemy.predict()
+      enemy.predict();
       bullets.splice(index, 1);
     }
   });
   particles.forEach((particle, index) => {
-    if(particle.alpha < 0.01) {
+    if (particle.alpha < 0.01) {
       particles.splice(index, 1);
     }
     particle.update();
-  })
-  if(ball != 0){
+  });
+  if (ball != 0) {
     ball.update();
   }
   player.update();
